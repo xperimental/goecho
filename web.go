@@ -11,7 +11,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-func echoHandler() http.Handler {
+func echoHandler(hostname string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "URL: %s\n", r.URL)
 		fmt.Fprintln(w, "Header:")
@@ -26,6 +26,10 @@ func echoHandler() http.Handler {
 			value := r.Header[key]
 			values := `"` + strings.Join(value, `"; "`) + `"`
 			fmt.Fprintf(w, "%s -> %s\n", key, values)
+		}
+
+		if len(hostname) > 0 {
+			fmt.Fprintf(w, "\nServer: %s\n", hostname)
 		}
 	})
 }
@@ -48,9 +52,9 @@ func versionHandler(version string) http.Handler {
 	})
 }
 
-func createServer(addr, version string) *http.Server {
+func createServer(addr, version, hostname string) *http.Server {
 	mux := http.NewServeMux()
-	mux.Handle("/", prometheus.InstrumentHandler("echo", echoHandler()))
+	mux.Handle("/", prometheus.InstrumentHandler("echo", echoHandler(hostname)))
 	mux.Handle("/metrics", prometheus.UninstrumentedHandler())
 	mux.Handle("/version", prometheus.InstrumentHandler("version", versionHandler(version)))
 

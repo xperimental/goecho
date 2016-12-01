@@ -8,10 +8,11 @@ import (
 
 func TestEchoHandler(t *testing.T) {
 	for _, test := range []struct {
-		url    string
-		header http.Header
-		status int
-		body   string
+		hostname string
+		url      string
+		header   http.Header
+		status   int
+		body     string
 	}{
 		{
 			url:    "/",
@@ -58,6 +59,12 @@ func TestEchoHandler(t *testing.T) {
 			status: http.StatusOK,
 			body:   "URL: /\nHeader:\nkey1 -> \"value1\"\nkey2 -> \"value2\"\n",
 		},
+		{
+			hostname: "test",
+			url:      "/",
+			status:   http.StatusOK,
+			body:     "URL: /\nHeader:\n\nServer: test\n",
+		},
 	} {
 		req, err := http.NewRequest(http.MethodGet, test.url, nil)
 		if err != nil {
@@ -67,7 +74,7 @@ func TestEchoHandler(t *testing.T) {
 
 		w := httptest.NewRecorder()
 
-		echoHandler().ServeHTTP(w, req)
+		echoHandler(test.hostname).ServeHTTP(w, req)
 
 		if w.Code != test.status {
 			t.Errorf("got status %d, expected %d", w.Code, test.status)
@@ -111,7 +118,7 @@ func TestVersionHandler(t *testing.T) {
 
 func TestCreateServer(t *testing.T) {
 	addr := "localhost:3000"
-	s := createServer(addr, "")
+	s := createServer(addr, "", "")
 
 	if s.Addr != addr {
 		t.Errorf("got '%s', wanted '%s'", s.Addr, addr)
