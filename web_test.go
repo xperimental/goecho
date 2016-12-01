@@ -67,7 +67,7 @@ func TestEchoHandler(t *testing.T) {
 
 		w := httptest.NewRecorder()
 
-		echoHandler(w, req)
+		echoHandler().ServeHTTP(w, req)
 
 		if w.Code != test.status {
 			t.Errorf("got status %d, expected %d", w.Code, test.status)
@@ -92,7 +92,7 @@ func TestVersionHandler(t *testing.T) {
 	w := httptest.NewRecorder()
 	handler := versionHandler("test-version")
 
-	handler(w, req)
+	handler.ServeHTTP(w, req)
 
 	if w.Code != expectedStatus {
 		t.Errorf("got status %d, wanted %d", w.Code, expectedStatus)
