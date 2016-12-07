@@ -20,7 +20,9 @@ func main() {
 		log.Printf("Error getting hostname: %s", err)
 	}
 
-	server := createServer(addr, Version, hostname)
+	env := os.Environ()
+
+	server := createServer(addr, Version, hostname, env)
 
 	log.Printf("Listening on %s\n", addr)
 	log.Fatal(server.ListenAndServe())

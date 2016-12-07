@@ -9,6 +9,7 @@ import (
 func TestEchoHandler(t *testing.T) {
 	for _, test := range []struct {
 		hostname string
+		env      []string
 		url      string
 		header   http.Header
 		status   int
@@ -65,6 +66,24 @@ func TestEchoHandler(t *testing.T) {
 			status:   http.StatusOK,
 			body:     "URL: /\nHeader:\n\nServer: test\n",
 		},
+		{
+			env: []string{
+				"key=value",
+				"key2=value2",
+			},
+			url:    "/",
+			status: http.StatusOK,
+			body:   "URL: /\nHeader:\n",
+		},
+		{
+			env: []string{
+				"key=value",
+				"key2=value2",
+			},
+			url:    "/?env=true",
+			status: http.StatusOK,
+			body:   "URL: /?env=true\nHeader:\n\nEnvironment:\nkey=value\nkey2=value2\n",
+		},
 	} {
 		req, err := http.NewRequest(http.MethodGet, test.url, nil)
 		if err != nil {
@@ -74,7 +93,7 @@ func TestEchoHandler(t *testing.T) {
 
 		w := httptest.NewRecorder()
 
-		echoHandler(test.hostname).ServeHTTP(w, req)
+		echoHandler(test.hostname, test.env).ServeHTTP(w, req)
 
 		if w.Code != test.status {
 			t.Errorf("got status %d, expected %d", w.Code, test.status)
@@ -118,7 +137,7 @@ func TestVersionHandler(t *testing.T) {
 
 func TestCreateServer(t *testing.T) {
 	addr := "localhost:3000"
-	s := createServer(addr, "", "")
+	s := createServer(addr, "", "", []string{})
 
 	if s.Addr != addr {
 		t.Errorf("got '%s', wanted '%s'", s.Addr, addr)
