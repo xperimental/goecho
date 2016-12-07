@@ -8,6 +8,8 @@ Currently it has the following endpoints:
 - `/version` – Version information
 - `/*` – Echo handler (will echo information about the request back)
 
+The echo handler understands one query parameter: "env". When set to any non-zero-length value the response will also contain the environment variables set for the server.
+
 ## Installation
 
 For our purposes we typically use the Docker image, which can be found [on Docker Hub](https://hub.docker.com/r/xperimental/goecho/):
