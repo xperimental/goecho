@@ -1,7 +1,5 @@
 language: go
 
-go: 1.7.x
-
 sudo: required
 
 services:
