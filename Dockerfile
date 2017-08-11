@@ -22,4 +22,4 @@ MAINTAINER Robert Jacob <robert.jacob@holidaycheck.com>
 EXPOSE 8080
 
 COPY --from=builder /go/bin/goecho /goecho
-CMD ["/goecho"]
+ENTRYPOINT ["/goecho"]
