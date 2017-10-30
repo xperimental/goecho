@@ -24,7 +24,7 @@ If you have Go installed it is also very simple to build the binary yourself:
 go get github.com/xperimental/goecho
 ```
 
-If you want to build the Docker image instead, then just download the sources (`go get -d`) and then run the provided script:
+If you want to build the Docker image instead, download the sources (`go get -d`) and run the provided script:
 
 ```bash
 ./build.sh
