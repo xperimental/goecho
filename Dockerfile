@@ -1,25 +1,30 @@
-FROM golang:1.8.3 AS builder
+FROM golang:1.11.5 AS builder
+
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y upx
 
-ARG PACKAGE
+WORKDIR /build
 
-RUN mkdir -p /go/src/${PACKAGE}
-WORKDIR /go/src/${PACKAGE}
+COPY go.mod go.sum /build/
+
+RUN go mod download
+RUN go mod verify
+
+COPY . /build/
 
 ARG VERSION
 
 ENV LD_FLAGS="-w -X main.Version=${VERSION}"
 ENV CGO_ENABLED=0
 
-COPY . /go/src/${PACKAGE}
-RUN go get -d -v .
-RUN go install -a -v -tags netgo -ldflags "${LD_FLAGS}" .
+RUN go install -v -tags netgo -ldflags "${LD_FLAGS}" .
 RUN upx -9 /go/bin/goecho
 
 FROM scratch
-MAINTAINER Robert Jacob <robert.jacob@holidaycheck.com>
+
+LABEL maintainer="Robert Jacob <xperimental@solidproject.de>"
 EXPOSE 8080
 
-COPY --from=builder /go/bin/goecho /goecho
-ENTRYPOINT ["/goecho"]
+COPY --from=builder /go/bin/goecho /bin/goecho
+ENTRYPOINT ["/bin/goecho"]
