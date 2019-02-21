@@ -21,7 +21,7 @@ ENV CGO_ENABLED=0
 RUN go install -v -tags netgo -ldflags "${LD_FLAGS}" .
 RUN upx -9 /go/bin/goecho
 
-FROM scratch
+FROM busybox
 
 LABEL maintainer="Robert Jacob <xperimental@solidproject.de>"
 EXPOSE 8080
