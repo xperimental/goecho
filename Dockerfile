@@ -25,6 +25,7 @@ FROM busybox
 
 LABEL maintainer="Robert Jacob <xperimental@solidproject.de>"
 EXPOSE 8080
+USER nobody
 
 COPY --from=builder /go/bin/goecho /bin/goecho
 ENTRYPOINT ["/bin/goecho"]
