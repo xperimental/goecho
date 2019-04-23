@@ -1,4 +1,4 @@
-FROM golang:1.11.5 AS builder
+FROM golang:1.12.4 AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 
