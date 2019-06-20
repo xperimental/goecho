@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func echoHandler(hostname string, env []string) http.Handler {
@@ -63,9 +63,9 @@ func versionHandler(version string) http.Handler {
 
 func createServer(addr, version, hostname string, env []string) *http.Server {
 	mux := http.NewServeMux()
-	mux.Handle("/", prometheus.InstrumentHandler("echo", echoHandler(hostname, env)))
-	mux.Handle("/metrics", prometheus.UninstrumentedHandler())
-	mux.Handle("/version", prometheus.InstrumentHandler("version", versionHandler(version)))
+	mux.Handle("/", instrumentHandler("echo", echoHandler(hostname, env)))
+	mux.Handle("/metrics", promhttp.Handler())
+	mux.Handle("/version", instrumentHandler("version", versionHandler(version)))
 
 	return &http.Server{
 		Addr:    addr,
