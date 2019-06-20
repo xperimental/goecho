@@ -31,7 +31,7 @@ func main() {
 
 	env := os.Environ()
 
-	server := createServer(addr, Version, hostname, env)
+	server, unreadyFunc := createServer(addr, Version, hostname, env)
 
 	shutdownErrCh := make(chan error)
 	go func() {
@@ -40,6 +40,9 @@ func main() {
 
 		<-sigCh
 		signal.Reset()
+
+		// Make readiness check fail
+		unreadyFunc()
 
 		if gracefulDelay > 0 {
 			log.Printf("Waiting %s for shutdown...", gracefulDelay)

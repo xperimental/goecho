@@ -135,9 +135,33 @@ func TestVersionHandler(t *testing.T) {
 	}
 }
 
+func TestReadyHandler(t *testing.T) {
+	readyness, unready := readyHandler()
+
+	req := httptest.NewRequest(http.MethodGet, "/_ready", nil)
+	rec := httptest.NewRecorder()
+
+	readyness.ServeHTTP(rec, req)
+
+	expectedStatus := http.StatusOK
+	if rec.Code != expectedStatus {
+		t.Errorf("got status %d, wanted %d", rec.Code, expectedStatus)
+	}
+
+	unready()
+
+	rec = httptest.NewRecorder()
+	readyness.ServeHTTP(rec, req)
+
+	expectedStatus = http.StatusInternalServerError
+	if rec.Code != expectedStatus {
+		t.Errorf("got status %d, wanted %d", rec.Code, expectedStatus)
+	}
+}
+
 func TestCreateServer(t *testing.T) {
 	addr := "localhost:3000"
-	s := createServer(addr, "", "", []string{})
+	s, _ := createServer(addr, "", "", []string{})
 
 	if s.Addr != addr {
 		t.Errorf("got '%s', wanted '%s'", s.Addr, addr)

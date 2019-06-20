@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -61,14 +62,32 @@ func versionHandler(version string) http.Handler {
 	})
 }
 
-func createServer(addr, version, hostname string, env []string) *http.Server {
+func readyHandler() (http.Handler, context.CancelFunc) {
+	ready := true
+	unready := func() {
+		ready = false
+	}
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !ready {
+			http.Error(w, "Unready.", http.StatusInternalServerError)
+			return
+		}
+
+		fmt.Fprintln(w, "Ready.")
+	}), unready
+}
+
+func createServer(addr, version, hostname string, env []string) (*http.Server, context.CancelFunc) {
+	readyness, unready := readyHandler()
+
 	mux := http.NewServeMux()
 	mux.Handle("/", instrumentHandler("echo", echoHandler(hostname, env)))
+	mux.Handle("/_ready", readyness)
 	mux.Handle("/metrics", promhttp.Handler())
 	mux.Handle("/version", instrumentHandler("version", versionHandler(version)))
 
 	return &http.Server{
 		Addr:    addr,
 		Handler: mux,
-	}
+	}, unready
 }
