@@ -19,8 +19,16 @@ var (
 	gracefulDelay = 2 * time.Second
 )
 
+type tlsConfig struct {
+	cert string
+	key  string
+}
+
 func main() {
+	var tlsc tlsConfig
 	flag.StringVar(&addr, "addr", addr, "Address and port to listen on.")
+	flag.StringVar(&tlsc.cert, "cert", "", "Path to TLS certificate file.")
+	flag.StringVar(&tlsc.key, "key", "", "Path to TLS key file.")
 	flag.DurationVar(&gracefulDelay, "graceful-delay", gracefulDelay, "Delay between receiving a shutdown signal and starting shutdown.")
 	flag.Parse()
 
@@ -32,6 +40,11 @@ func main() {
 	env := os.Environ()
 
 	server, unreadyFunc := createServer(addr, Version, hostname, env)
+
+	if tlsc.cert == "" && tlsc.key == "" {
+		tlsc.cert = os.Getenv("TLS_CERT")
+		tlsc.key = os.Getenv("TLS_KEY")
+	}
 
 	shutdownErrCh := make(chan error)
 	go func() {
@@ -54,7 +67,12 @@ func main() {
 	}()
 
 	log.Printf("Listening on %s\n", addr)
-	err = server.ListenAndServe()
+	if tlsc.cert != "" && tlsc.key != "" {
+		err = server.ListenAndServeTLS(tlsc.cert, tlsc.key)
+	} else {
+		err = server.ListenAndServe()
+	}
+
 	if err != nil && err != http.ErrServerClosed {
 		log.Fatalf("Error during listen: %s", err)
 	}
