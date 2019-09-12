@@ -34,8 +34,14 @@ The image will be called "xperimental/goecho" and have a tag based on the git re
 
 ## Usage
 
-The program understands one parameter `-addr` which sets the address it listens on for connections. By default it listens on port `8080`:
+Some configuration options can be either set by using command-line options or environment variables. If both are set, environment variables will override the command-line options:
 
-```bash
-goecho -addr :8080
-```
+|      Option       | Environment Variable | Default |                           Description                            |
+| :---------------- | :------------------- | :------ | :--------------------------------------------------------------- |
+| `-addr`           | `LISTEN_ADDR`        | `:8080` | Address and port to listen on.                                   |
+| `-allow-env`      | `ALLOW_ENV`          |         | Allow retrieval of environment variables.                        |
+| `-graceful-delay` | `GRACEFUL_DELAY`     | `2s`    | Delay between receiving a shutdown signal and starting shutdown. |
+| `-tls-cert`       | `TLS_CERT`           |         | Path to TLS certificate file.                                    |
+| `-tls-key`        | `TLS_KEY`            |         | Path to TLS key file.                                            |
+
+For TLS support to work, both the certificate file and key file need to be set.
