@@ -2,7 +2,6 @@ package main // import "github.com/xperimental/goecho"
 
 import (
 	"context"
-	"flag"
 	"log"
 	"net/http"
 	"os"
@@ -15,25 +14,13 @@ import (
 var (
 	// Version is set to the build version when building using the build script.
 	Version = "unknown"
-
-	addr          = ":8080"
-	gracefulDelay = 2 * time.Second
-	allowEnv      bool
 )
 
-type tlsConfig struct {
-	cert string
-	key  string
-}
-
 func main() {
-	var tlsc tlsConfig
-	flag.StringVar(&addr, "addr", addr, "Address and port to listen on.")
-	flag.StringVar(&tlsc.cert, "cert", "", "Path to TLS certificate file.")
-	flag.StringVar(&tlsc.key, "key", "", "Path to TLS key file.")
-	flag.DurationVar(&gracefulDelay, "graceful-delay", gracefulDelay, "Delay between receiving a shutdown signal and starting shutdown.")
-	flag.BoolVar(&allowEnv, "allow-env", allowEnv, "Allow retrieval of environment variables.")
-	flag.Parse()
+	cfg, err := parseConfig()
+	if err != nil {
+		log.Fatalf("Error in configuration: %s", err)
+	}
 
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -41,17 +28,12 @@ func main() {
 	}
 
 	env := []string{}
-	if allowEnv {
+	if cfg.AllowEnv {
 		env = os.Environ()
 		sort.Strings(env)
 	}
 
-	server, unreadyFunc := createServer(addr, Version, hostname, env)
-
-	if tlsc.cert == "" && tlsc.key == "" {
-		tlsc.cert = os.Getenv("TLS_CERT")
-		tlsc.key = os.Getenv("TLS_KEY")
-	}
+	server, unreadyFunc := createServer(cfg.Addr, Version, hostname, env)
 
 	shutdownErrCh := make(chan error)
 	go func() {
@@ -64,18 +46,18 @@ func main() {
 		// Make readiness check fail
 		unreadyFunc()
 
-		if gracefulDelay > 0 {
-			log.Printf("Waiting %s for shutdown...", gracefulDelay)
-			time.Sleep(gracefulDelay)
+		if cfg.GracefulDelay > 0 {
+			log.Printf("Waiting %s for shutdown...", cfg.GracefulDelay)
+			time.Sleep(cfg.GracefulDelay)
 		}
 
 		log.Println("Shutting down...")
 		shutdownErrCh <- server.Shutdown(context.Background())
 	}()
 
-	log.Printf("Listening on %s\n", addr)
-	if tlsc.cert != "" && tlsc.key != "" {
-		err = server.ListenAndServeTLS(tlsc.cert, tlsc.key)
+	log.Printf("Listening on %s\n", cfg.Addr)
+	if cfg.TLS.CertFile != "" && cfg.TLS.KeyFile != "" {
+		err = server.ListenAndServeTLS(cfg.TLS.CertFile, cfg.TLS.KeyFile)
 	} else {
 		err = server.ListenAndServe()
 	}
