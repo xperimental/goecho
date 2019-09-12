@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sort"
 	"syscall"
 	"time"
 )
@@ -17,6 +18,7 @@ var (
 
 	addr          = ":8080"
 	gracefulDelay = 2 * time.Second
+	allowEnv      bool
 )
 
 type tlsConfig struct {
@@ -30,6 +32,7 @@ func main() {
 	flag.StringVar(&tlsc.cert, "cert", "", "Path to TLS certificate file.")
 	flag.StringVar(&tlsc.key, "key", "", "Path to TLS key file.")
 	flag.DurationVar(&gracefulDelay, "graceful-delay", gracefulDelay, "Delay between receiving a shutdown signal and starting shutdown.")
+	flag.BoolVar(&allowEnv, "allow-env", allowEnv, "Allow retrieval of environment variables.")
 	flag.Parse()
 
 	hostname, err := os.Hostname()
@@ -37,7 +40,11 @@ func main() {
 		log.Printf("Error getting hostname: %s", err)
 	}
 
-	env := os.Environ()
+	env := []string{}
+	if allowEnv {
+		env = os.Environ()
+		sort.Strings(env)
+	}
 
 	server, unreadyFunc := createServer(addr, Version, hostname, env)
 
