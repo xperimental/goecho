@@ -17,6 +17,7 @@ func echoHandler(hostname string, env []string) http.Handler {
 		showEnv := len(r.URL.Query().Get("env")) > 0
 
 		fmt.Fprintf(w, "URL: %s\n", r.URL)
+		fmt.Fprintf(w, "Protocol: %s\n", r.Proto)
 		fmt.Fprintln(w, "Header:")
 
 		headers := make([]string, 0, len(r.Header))
