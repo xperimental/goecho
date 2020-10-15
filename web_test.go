@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,19 +13,20 @@ func TestEchoHandler(t *testing.T) {
 		env      []string
 		url      string
 		header   http.Header
+		tlsState *tls.ConnectionState
 		status   int
 		body     string
 	}{
 		{
 			url:    "/",
 			status: http.StatusOK,
-			body:   "URL: /\nHeader:\n",
+			body:   "URL: /\nProtocol: HTTP/1.1\nHeader:\n",
 		},
 		{
 			url:    "/",
 			header: http.Header{},
 			status: http.StatusOK,
-			body:   "URL: /\nHeader:\n",
+			body:   "URL: /\nProtocol: HTTP/1.1\nHeader:\n",
 		},
 		{
 			url: "/",
@@ -32,7 +34,7 @@ func TestEchoHandler(t *testing.T) {
 				"key1": []string{"value1"},
 			},
 			status: http.StatusOK,
-			body:   "URL: /\nHeader:\nkey1 -> \"value1\"\n",
+			body:   "URL: /\nProtocol: HTTP/1.1\nHeader:\nkey1 -> \"value1\"\n",
 		},
 		{
 			url: "/",
@@ -40,7 +42,7 @@ func TestEchoHandler(t *testing.T) {
 				"key1": []string{"value1", "value2"},
 			},
 			status: http.StatusOK,
-			body:   "URL: /\nHeader:\nkey1 -> \"value1\"; \"value2\"\n",
+			body:   "URL: /\nProtocol: HTTP/1.1\nHeader:\nkey1 -> \"value1\"; \"value2\"\n",
 		},
 		{
 			url: "/",
@@ -49,7 +51,7 @@ func TestEchoHandler(t *testing.T) {
 				"key2": []string{"value2"},
 			},
 			status: http.StatusOK,
-			body:   "URL: /\nHeader:\nkey1 -> \"value1\"\nkey2 -> \"value2\"\n",
+			body:   "URL: /\nProtocol: HTTP/1.1\nHeader:\nkey1 -> \"value1\"\nkey2 -> \"value2\"\n",
 		},
 		{
 			url: "/",
@@ -58,13 +60,13 @@ func TestEchoHandler(t *testing.T) {
 				"key1": []string{"value1"},
 			},
 			status: http.StatusOK,
-			body:   "URL: /\nHeader:\nkey1 -> \"value1\"\nkey2 -> \"value2\"\n",
+			body:   "URL: /\nProtocol: HTTP/1.1\nHeader:\nkey1 -> \"value1\"\nkey2 -> \"value2\"\n",
 		},
 		{
 			hostname: "test",
 			url:      "/",
 			status:   http.StatusOK,
-			body:     "URL: /\nHeader:\n\nServer: test\n",
+			body:     "URL: /\nProtocol: HTTP/1.1\nHeader:\n\nServer: test\n",
 		},
 		{
 			env: []string{
@@ -73,7 +75,7 @@ func TestEchoHandler(t *testing.T) {
 			},
 			url:    "/",
 			status: http.StatusOK,
-			body:   "URL: /\nHeader:\n",
+			body:   "URL: /\nProtocol: HTTP/1.1\nHeader:\n",
 		},
 		{
 			env: []string{
@@ -82,7 +84,16 @@ func TestEchoHandler(t *testing.T) {
 			},
 			url:    "/?env=true",
 			status: http.StatusOK,
-			body:   "URL: /?env=true\nHeader:\n\nEnvironment:\nkey=value\nkey2=value2\n",
+			body:   "URL: /?env=true\nProtocol: HTTP/1.1\nHeader:\n\nEnvironment:\nkey=value\nkey2=value2\n",
+		},
+		{
+			url: "/",
+			tlsState: &tls.ConnectionState{
+				ServerName:         "tls-test-server",
+				NegotiatedProtocol: "tls-protocol",
+			},
+			status: http.StatusOK,
+			body:   "URL: /\nProtocol: HTTP/1.1\nTLS Server Name: tls-test-server\nTLS Negotiated Protocol: tls-protocol\nHeader:\n",
 		},
 	} {
 		req, err := http.NewRequest(http.MethodGet, test.url, nil)
@@ -90,6 +101,7 @@ func TestEchoHandler(t *testing.T) {
 			t.Fatalf("can not create request: %s", err)
 		}
 		req.Header = test.header
+		req.TLS = test.tlsState
 
 		w := httptest.NewRecorder()
 

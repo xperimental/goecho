@@ -17,8 +17,15 @@ func echoHandler(hostname string, env []string) http.Handler {
 		showEnv := len(r.URL.Query().Get("env")) > 0
 
 		fmt.Fprintf(w, "URL: %s\n", r.URL)
-		fmt.Fprintln(w, "Header:")
+		fmt.Fprintf(w, "Protocol: %s\n", r.Proto)
 
+		if r.TLS != nil {
+			tls := r.TLS
+			fmt.Fprintf(w, "TLS Server Name: %s\n", tls.ServerName)
+			fmt.Fprintf(w, "TLS Negotiated Protocol: %s\n", tls.NegotiatedProtocol)
+		}
+
+		fmt.Fprintln(w, "Header:")
 		headers := make([]string, 0, len(r.Header))
 		for key := range r.Header {
 			headers = append(headers, key)
