@@ -6,6 +6,7 @@ Currently it has the following endpoints:
 
 - `/metrics` – prometheus metrics about the service
 - `/version` – Version information
+- `/_ready` - Readiness check
 - `/*` – Echo handler (will echo information about the request back)
 
 The echo handler understands one query parameter: "env". When set to any non-zero-length value the response will also contain the environment variables set for the server.
@@ -21,12 +22,16 @@ docker run --rm --interactive --tty --publish 8080:8080 xperimental/goecho:$TAG
 If you have Go installed it is also very simple to build the binary yourself:
 
 ```bash
-go get github.com/xperimental/goecho
+git clone https://github.com/xperimental/goecho.git
+cd goecho
+go build
 ```
 
-If you want to build the Docker image instead, download the sources (`go get -d`) and run the provided script:
+If you want to build the Docker image instead, download the sources and run the provided script:
 
 ```bash
+git clone https://github.com/xperimental/goecho.git
+cd goecho
 ./build.sh
 ```
 
