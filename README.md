@@ -44,4 +44,8 @@ Some configuration options can be either set by using command-line options or en
 | `-tls-cert`       | `TLS_CERT`           |         | Path to TLS certificate file.                                    |
 | `-tls-key`        | `TLS_KEY`            |         | Path to TLS key file.                                            |
 
-For TLS support to work, both the certificate file and key file need to be set.
+### TLS Support
+
+goecho will by default only run a HTTP server, but if you provide a TLS certificate and key either using command-line flags or environment variables it will instead provide a HTTPS server.
+
+When TLS is enabled and TLS requests reach the server the echo handler will also return information about the TLS version and the hostname used for the connection.
