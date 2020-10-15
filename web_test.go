@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,6 +13,7 @@ func TestEchoHandler(t *testing.T) {
 		env      []string
 		url      string
 		header   http.Header
+		tlsState *tls.ConnectionState
 		status   int
 		body     string
 	}{
@@ -84,12 +86,22 @@ func TestEchoHandler(t *testing.T) {
 			status: http.StatusOK,
 			body:   "URL: /?env=true\nProtocol: HTTP/1.1\nHeader:\n\nEnvironment:\nkey=value\nkey2=value2\n",
 		},
+		{
+			url: "/",
+			tlsState: &tls.ConnectionState{
+				ServerName:         "tls-test-server",
+				NegotiatedProtocol: "tls-protocol",
+			},
+			status: http.StatusOK,
+			body:   "URL: /\nProtocol: HTTP/1.1\nTLS Server Name: tls-test-server\nTLS Negotiated Protocol: tls-protocol\nHeader:\n",
+		},
 	} {
 		req, err := http.NewRequest(http.MethodGet, test.url, nil)
 		if err != nil {
 			t.Fatalf("can not create request: %s", err)
 		}
 		req.Header = test.header
+		req.TLS = test.tlsState
 
 		w := httptest.NewRecorder()
 
