@@ -18,13 +18,13 @@ func TestEchoHandler(t *testing.T) {
 		{
 			url:    "/",
 			status: http.StatusOK,
-			body:   "URL: /\nHeader:\n",
+			body:   "URL: /\nProtocol: HTTP/1.1\nHeader:\n",
 		},
 		{
 			url:    "/",
 			header: http.Header{},
 			status: http.StatusOK,
-			body:   "URL: /\nHeader:\n",
+			body:   "URL: /\nProtocol: HTTP/1.1\nHeader:\n",
 		},
 		{
 			url: "/",
@@ -32,7 +32,7 @@ func TestEchoHandler(t *testing.T) {
 				"key1": []string{"value1"},
 			},
 			status: http.StatusOK,
-			body:   "URL: /\nHeader:\nkey1 -> \"value1\"\n",
+			body:   "URL: /\nProtocol: HTTP/1.1\nHeader:\nkey1 -> \"value1\"\n",
 		},
 		{
 			url: "/",
@@ -40,7 +40,7 @@ func TestEchoHandler(t *testing.T) {
 				"key1": []string{"value1", "value2"},
 			},
 			status: http.StatusOK,
-			body:   "URL: /\nHeader:\nkey1 -> \"value1\"; \"value2\"\n",
+			body:   "URL: /\nProtocol: HTTP/1.1\nHeader:\nkey1 -> \"value1\"; \"value2\"\n",
 		},
 		{
 			url: "/",
@@ -49,7 +49,7 @@ func TestEchoHandler(t *testing.T) {
 				"key2": []string{"value2"},
 			},
 			status: http.StatusOK,
-			body:   "URL: /\nHeader:\nkey1 -> \"value1\"\nkey2 -> \"value2\"\n",
+			body:   "URL: /\nProtocol: HTTP/1.1\nHeader:\nkey1 -> \"value1\"\nkey2 -> \"value2\"\n",
 		},
 		{
 			url: "/",
@@ -58,13 +58,13 @@ func TestEchoHandler(t *testing.T) {
 				"key1": []string{"value1"},
 			},
 			status: http.StatusOK,
-			body:   "URL: /\nHeader:\nkey1 -> \"value1\"\nkey2 -> \"value2\"\n",
+			body:   "URL: /\nProtocol: HTTP/1.1\nHeader:\nkey1 -> \"value1\"\nkey2 -> \"value2\"\n",
 		},
 		{
 			hostname: "test",
 			url:      "/",
 			status:   http.StatusOK,
-			body:     "URL: /\nHeader:\n\nServer: test\n",
+			body:     "URL: /\nProtocol: HTTP/1.1\nHeader:\n\nServer: test\n",
 		},
 		{
 			env: []string{
@@ -73,7 +73,7 @@ func TestEchoHandler(t *testing.T) {
 			},
 			url:    "/",
 			status: http.StatusOK,
-			body:   "URL: /\nHeader:\n",
+			body:   "URL: /\nProtocol: HTTP/1.1\nHeader:\n",
 		},
 		{
 			env: []string{
@@ -82,7 +82,7 @@ func TestEchoHandler(t *testing.T) {
 			},
 			url:    "/?env=true",
 			status: http.StatusOK,
-			body:   "URL: /?env=true\nHeader:\n\nEnvironment:\nkey=value\nkey2=value2\n",
+			body:   "URL: /?env=true\nProtocol: HTTP/1.1\nHeader:\n\nEnvironment:\nkey=value\nkey2=value2\n",
 		},
 	} {
 		req, err := http.NewRequest(http.MethodGet, test.url, nil)
