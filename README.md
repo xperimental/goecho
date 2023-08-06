@@ -2,7 +2,7 @@
 
 This is a simple HTTP server built in Go that suited us good in testing our orchestration so far. It will answer to every path and method and will echo information about the request back to the client.
 
-Currently it has the following endpoints:
+Currently, it has the following endpoints:
 
 - `/metrics` – prometheus metrics about the service
 - `/version` – Version information
@@ -24,7 +24,7 @@ If you have Go installed it is also very simple to build the binary yourself:
 ```bash
 git clone https://github.com/xperimental/goecho.git
 cd goecho
-go build
+make build-binary
 ```
 
 If you want to build the Docker image instead, download the sources and run the provided script:
@@ -32,7 +32,7 @@ If you want to build the Docker image instead, download the sources and run the 
 ```bash
 git clone https://github.com/xperimental/goecho.git
 cd goecho
-./build.sh
+make image
 ```
 
 The image will be called "xperimental/goecho" and have a tag based on the git repository ("latest" if you have made any uncommitted changes).
@@ -41,8 +41,8 @@ The image will be called "xperimental/goecho" and have a tag based on the git re
 
 Some configuration options can be either set by using command-line options or environment variables. If both are set, environment variables will override the command-line options:
 
-|      Option       | Environment Variable | Default |                           Description                            |
-| :---------------- | :------------------- | :------ | :--------------------------------------------------------------- |
+| Option            | Environment Variable | Default | Description                                                      |
+|:------------------|:---------------------|:--------|:-----------------------------------------------------------------|
 | `-addr`           | `LISTEN_ADDR`        | `:8080` | Address and port to listen on.                                   |
 | `-allow-env`      | `ALLOW_ENV`          |         | Allow retrieval of environment variables.                        |
 | `-graceful-delay` | `GRACEFUL_DELAY`     | `2s`    | Delay between receiving a shutdown signal and starting shutdown. |
