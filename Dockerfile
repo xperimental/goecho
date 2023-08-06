@@ -1,8 +1,12 @@
-FROM golang:1.16.2 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.16.2-alpine AS builder
 
-ENV DEBIAN_FRONTEND=noninteractive
+ARG TARGETOS
+ARG TARGETARCH
 
-RUN apt-get update && apt-get install -y upx
+ENV GOOS=$TARGETOS
+ENV GOARCH=$TARGETARCH
+
+RUN apk add --no-cache make git bash
 
 WORKDIR /build
 
@@ -12,20 +16,13 @@ RUN go mod download
 RUN go mod verify
 
 COPY . /build/
+RUN make build-binary
 
-ARG VERSION
-
-ENV LD_FLAGS="-w -X main.Version=${VERSION}"
-ENV CGO_ENABLED=0
-
-RUN go install -v -tags netgo -ldflags "${LD_FLAGS}" .
-RUN upx -9 /go/bin/goecho
-
-FROM busybox
+FROM --platform=$TARGETPLATFORM busybox
 
 LABEL maintainer="Robert Jacob <xperimental@solidproject.de>"
 EXPOSE 8080
 USER nobody
 
-COPY --from=builder /go/bin/goecho /bin/goecho
+COPY --from=builder /build/goecho /bin/goecho
 ENTRYPOINT ["/bin/goecho"]
