@@ -37,7 +37,7 @@ func main() {
 
 	shutdownErrCh := make(chan error)
 	go func() {
-		sigCh := make(chan os.Signal)
+		sigCh := make(chan os.Signal, 1)
 		signal.Notify(sigCh, syscall.SIGTERM, syscall.SIGINT)
 
 		<-sigCh
